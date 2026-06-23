@@ -19,7 +19,6 @@ Funcionalidades
 Produtos
 Listar produtos;
 Filtrar produtos por tema;
-Buscar produto por ID;
 Cadastrar produto;
 Atualizar produto;
 Excluir produto.
@@ -46,3 +45,4 @@ npm run dev
 
 O servidor será iniciado na porta:
 http://localhost:8000
+
