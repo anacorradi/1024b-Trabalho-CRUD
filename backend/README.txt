@@ -41,6 +41,12 @@ Instalar as dependências:
 npm install
 
 Executar o projeto:
+cd backend
+npm i
+npm run dev
+
+cd frontend
+npm i
 npm run dev
 
 O servidor será iniciado na porta:

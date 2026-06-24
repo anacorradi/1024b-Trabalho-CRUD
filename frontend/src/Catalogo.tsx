@@ -20,7 +20,8 @@ function Catalogo() {
   const [erro, setErro] = useState<string | null>(null);
   const [temaSelecionado, setTemaSelecionado] = useState('');
   const [busca, setBusca] = useState('');
-  const [precoMax, setPrecoMax] = useState<number | null>(null);
+  const [precoMin, setPrecoMin] = useState('');
+  const [precoMax, setPrecoMax] = useState('');
   const [ordem, setOrdem] = useState<'nome' | 'preco-asc' | 'preco-desc'>('nome');
 
   useEffect(() => {
@@ -78,8 +79,16 @@ function Catalogo() {
       lista = lista.filter(p => p.tema === temaSelecionado);
     }
 
-    if (precoMax !== null) {
-      lista = lista.filter(p => p.preco <= precoMax);
+    if (precoMin !== '') {
+      lista = lista.filter(
+        p => p.preco >= Number(precoMin)
+      );
+    }
+
+    if (precoMax !== '') {
+      lista = lista.filter(
+        p => p.preco <= Number(precoMax)
+      );
     }
 
     if (ordem === 'nome') {
@@ -91,7 +100,7 @@ function Catalogo() {
     }
 
     return lista;
-  }, [produtos, busca, temaSelecionado, precoMax, ordem]);
+  }, [produtos, busca, temaSelecionado, precoMin, precoMax, ordem]);
 
   const temas = useMemo(() => {
     const map = new Map<string, number>();
@@ -211,18 +220,29 @@ function Catalogo() {
               </div>
 
               <div className="grupo-filtro">
+                <label>Preço mínimo:</label>
+                <input
+                  type="number"
+                  placeholder="Ex: 100"
+                  value={precoMin}
+                  onChange={(e) =>
+                    setPrecoMin(e.target.value)
+                  }
+                  className="input-preco"
+                />
+              </div>
+
+              <div className="grupo-filtro">
                 <label>Preço máximo:</label>
-                <div className="slider-preco">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100000"
-                    value={precoMax ?? 100000}
-                    onChange={(e) => setPrecoMax(Number(e.target.value))}
-                    className="slider"
-                  />
-                  <span className="valor-preco">R$ {precoMax ?? 100000}</span>
-                </div>
+                <input
+                  type="number"
+                  placeholder="Ex: 1000"
+                  value={precoMax}
+                  onChange={(e) =>
+                    setPrecoMax(e.target.value)
+                  }
+                  className="input-preco"
+                />
               </div>
             </div>
 

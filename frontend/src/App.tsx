@@ -40,6 +40,16 @@ function App() {
   const [salvando, setSalvando] = useState(false);
   const [fotoUrl, setFotoUrl] = useState('');
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editNome, setEditNome] = useState('');
+  const [editTema, setEditTema] = useState('');
+  const [editFaixaEtaria, setEditFaixaEtaria] = useState('');
+  const [editPecas, setEditPecas] = useState('');
+  const [editPreco, setEditPreco] = useState('');
+  const [editEstoque, setEditEstoque] = useState('');
+  const [editAnoLancamento, setEditAnoLancamento] = useState('');
+  const [editFotoUrl, setEditFotoUrl] = useState('');
+
   async function carregarProdutos(temaFiltro?: string) {
     try {
       setCarregando(true);
@@ -160,49 +170,48 @@ function App() {
     }
   }
 
-  async function handleEditar(produto: Produto) {
-    if (typeof window.prompt !== 'function') {
-      alert('Edição via prompt() não suportada neste ambiente. Abra o app no navegador ou use o formulário de cadastro para atualizar.');
-      return;
-    }
+  function iniciarEdicao(produto: Produto) {
+    setEditingId(produto.id_produto);
+    setEditNome(produto.nome);
+    setEditTema(produto.tema);
+    setEditFaixaEtaria(produto.faixa_etaria);
+    setEditPecas(produto.pecas.toString());
+    setEditPreco(produto.preco.toString());
+    setEditEstoque(produto.estoque.toString());
+    setEditAnoLancamento(produto.ano_lancamento.toString());
+    setEditFotoUrl(produto.foto_url || '');
+  }
 
-    const novoNome = prompt('Nome:', produto.nome) ?? produto.nome;
-    const novoTema = prompt('Tema:', produto.tema) ?? produto.tema;
-    const novaFaixa = prompt('Faixa etária:', produto.faixa_etaria) ?? produto.faixa_etaria;
-    const novasPecas = prompt('Peças:', produto.pecas.toString()) ?? produto.pecas.toString();
-    const novoPreco = prompt('Preço:', produto.preco.toString()) ?? produto.preco.toString();
-    const novoEstoque = prompt('Estoque:', produto.estoque.toString()) ?? produto.estoque.toString();
-    const novoAno = prompt('Ano:', produto.ano_lancamento.toString()) ?? produto.ano_lancamento.toString();
+  async function salvarEdicao() {
+    if (editingId === null) return;
 
     try {
       const resposta = await fetch(
-        `http://localhost:8000/produtos/${produto.id_produto}`,
+        `http://localhost:8000/produtos/${editingId}`,
         {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            nome: novoNome,
-            tema: novoTema,
-            faixa_etaria: novaFaixa,
-            pecas: Number(novasPecas),
-            preco: Number(novoPreco),
-            estoque: Number(novoEstoque),
-            ano_lancamento: Number(novoAno),
+            nome: editNome,
+            tema: editTema,
+            foto_url: editFotoUrl || null,
+            faixa_etaria: editFaixaEtaria,
+            pecas: Number(editPecas),
+            preco: Number(editPreco),
+            estoque: Number(editEstoque),
+            ano_lancamento: Number(editAnoLancamento),
           }),
         }
       );
 
       if (!resposta.ok) {
         const erroResposta = await resposta.json();
-
-        throw new Error(
-          erroResposta.mensagem ||
-            'Erro ao atualizar produto.'
-        );
+        throw new Error(erroResposta.mensagem || 'Erro ao atualizar produto.');
       }
 
+      setEditingId(null);
       await carregarProdutos(filtroTema);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -211,6 +220,10 @@ function App() {
         alert('Erro inesperado.');
       }
     }
+  }
+
+  function cancelarEdicao() {
+    setEditingId(null);
   }
 
   if (pagina === 'catalogo') {
@@ -387,82 +400,113 @@ function App() {
       <ul className="listaProdutos">
         {produtos.map((produto) => (
           <li className="cardProduto" key={produto.id_produto}>
-            {produto.foto_url && (
-              <div className="infoProduto fotoProduto">
-                <img
-                  src={produto.foto_url}
-                  alt={produto.nome}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'https://via.placeholder.com/180x120?text=Sem+imagem';
-                  }}
+            {editingId === produto.id_produto ? (
+              <div>
+                {editFotoUrl && (
+                  <div className="infoProduto fotoProduto">
+                    <img
+                      src={editFotoUrl}
+                      alt={editNome}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://via.placeholder.com/180x120?text=Sem+imagem';
+                      }}
+                    />
+                  </div>
+                )}
+
+                <p className="infoProduto">
+                  <strong>ID:</strong> {produto.id_produto}
+                </p>
+
+                <input
+                  className="infoProduto"
+                  value={editNome}
+                  onChange={(e) => setEditNome(e.target.value)}
                 />
+
+                <input
+                  className="infoProduto"
+                  value={editTema}
+                  onChange={(e) => setEditTema(e.target.value)}
+                />
+
+                <input
+                  className="infoProduto"
+                  value={editFaixaEtaria}
+                  onChange={(e) => setEditFaixaEtaria(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  className="infoProduto"
+                  value={editPecas}
+                  onChange={(e) => setEditPecas(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  className="infoProduto"
+                  value={editPreco}
+                  onChange={(e) => setEditPreco(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  className="infoProduto"
+                  value={editEstoque}
+                  onChange={(e) => setEditEstoque(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  className="infoProduto"
+                  value={editAnoLancamento}
+                  onChange={(e) => setEditAnoLancamento(e.target.value)}
+                />
+
+                <input
+                  placeholder="Link da foto"
+                  value={editFotoUrl}
+                  onChange={(e) => setEditFotoUrl(e.target.value)}
+                />
+
+                <div style={{ marginTop: 8 }}>
+                  <button className="botaoSalvar" onClick={salvarEdicao}>Salvar</button>
+                  <button className="botaoExcluir" onClick={cancelarEdicao}>Cancelar</button>
+                  <button className="botaoExcluir" onClick={() => handleDeletar(produto.id_produto)}>Excluir</button>
+                </div>
               </div>
+            ) : (
+              <>
+                {produto.foto_url && (
+                  <div className="infoProduto fotoProduto">
+                    <img
+                      src={produto.foto_url}
+                      alt={produto.nome}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://via.placeholder.com/180x120?text=Sem+imagem';
+                      }}
+                    />
+                  </div>
+                )}
+
+                <p className="infoProduto"><strong>ID:</strong> {produto.id_produto}</p>
+                <p className="infoProduto"><strong>Nome:</strong> {produto.nome}</p>
+                <p className="infoProduto"><strong>Tema:</strong> {produto.tema}</p>
+                <p className="infoProduto"><strong>Faixa Etária:</strong> {produto.faixa_etaria}</p>
+                <p className="infoProduto"><strong>Peças:</strong> {produto.pecas}</p>
+                <p className="infoProduto"><strong>Preço:</strong> R${produto.preco}</p>
+                <p className="infoProduto"><strong>Estoque:</strong> {produto.estoque}</p>
+                <p className="infoProduto"><strong>Ano:</strong> {produto.ano_lancamento}</p>
+
+                <button className="botaoEditar" onClick={() => iniciarEdicao(produto)}>Editar</button>
+                {' '}
+                <button className="botaoExcluir" onClick={() => handleDeletar(produto.id_produto)}>Excluir</button>
+                <hr className="separador" />
+              </>
             )}
-
-            <p className="infoProduto">
-              <strong>ID:</strong>{' '}
-              {produto.id_produto}
-            </p>
-
-            <p className="infoProduto">
-              <strong>Nome:</strong>{' '}
-              {produto.nome}
-            </p>
-
-            <p className="infoProduto">
-              <strong>Tema:</strong>{' '}
-              {produto.tema}
-            </p>
-
-            <p className="infoProduto">
-              <strong>Faixa Etária:</strong>{' '}
-              {produto.faixa_etaria}
-            </p>
-
-            <p className="infoProduto">
-              <strong>Peças:</strong>{' '}
-              {produto.pecas}
-            </p>
-
-            <p className="infoProduto">
-              <strong>Preço:</strong> R$
-              {produto.preco}
-            </p>
-
-            <p className="infoProduto">
-              <strong>Estoque:</strong>{' '}
-              {produto.estoque}
-            </p>
-
-            <p className="infoProduto">
-              <strong>Ano:</strong>{' '}
-              {produto.ano_lancamento}
-            </p>
-
-            <button
-              className="botaoEditar"
-              onClick={() =>
-                handleEditar(produto)
-              }
-            >
-              Editar
-            </button>
-
-            {' '}
-
-            <button
-              className="botaoExcluir"
-              onClick={() =>
-                handleDeletar(
-                  produto.id_produto
-                )
-              }
-            >
-              Excluir
-            </button>
-
-            <hr className="separador" />
           </li>
         ))}
       </ul>

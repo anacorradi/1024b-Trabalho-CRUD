@@ -299,6 +299,8 @@ app.post('/produtos', async (req, res) => {
 
   try {
 
+    const fotoUrl = foto_url ?? null;
+
     const [result] = await connection.execute<ResultSetHeader>(
       `INSERT INTO produtos
 (nome,tema,foto_url,faixa_etaria,pecas,preco,estoque,ano_lancamento)
@@ -307,7 +309,7 @@ VALUES(?,?,?,?,?,?,?,?)`,
       [
         nome,
         tema,
-        foto_url,
+        fotoUrl,
         faixa_etaria,
         pecas,
         preco,
@@ -363,7 +365,7 @@ app.patch('/produtos/:id', async (req, res) => {
 
     const novoNome = nome ?? produtoAtual.nome;
     const novoTema = tema ?? produtoAtual.tema;
-    const novoFotoUrl = foto_url ?? produtoAtual.foto_url;
+    const novoFotoUrl = foto_url ?? (produtoAtual.foto_url ?? null);
     const novaFaixa = faixa_etaria ?? produtoAtual.faixa_etaria;
     const novasPecas = pecas ?? produtoAtual.pecas;
     const novoPreco = preco ?? produtoAtual.preco;
